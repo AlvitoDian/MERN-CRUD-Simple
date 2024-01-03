@@ -1,4 +1,4 @@
-﻿# MERN-CRUD-Simple
+﻿# MERN-CRUD-Authentication-Authorization-Simple
 
 ## Installation
 
