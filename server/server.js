@@ -4,10 +4,19 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const { body, validationResult } = require("express-validator");
-const dbUri = "<MONGO_URI>";
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
+const dbUri = "<MONGODB_URI>";
 const bcrypt = require("bcrypt");
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:3000"],
+    methods: ["GET", "POST"],
+    credentials: true,
+  })
+);
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 const UserModel = require("./models/Users.js");
 
@@ -37,6 +46,24 @@ const Student = mongoose.model("Student", studentSchema);
 //? Connect Port
 app.listen(5000, () => {
   console.log("Server started on port 5000");
+});
+
+//? Verify User
+const verifyUser = (req, res, next) => {
+  const token = req.cookies.token;
+  if (!token) {
+    return res.json("Token expired");
+  } else {
+    jwt.verify(token, "jwt-secret-key", (err, decoded) => {
+      if (err) return res.json("Token wrong");
+      next();
+    });
+  }
+};
+
+//? Index Page
+app.get("/", verifyUser, (req, res) => {
+  return res.json("Success");
 });
 
 //? Function Registration User
@@ -98,6 +125,10 @@ app.post("/login", [
           // Hash Crypt
           bcrypt.compare(password, user.password, (err, response) => {
             if (response) {
+              const token = jwt.sign({ email: user.email }, "jwt-secret-key", {
+                expiresIn: "1d",
+              });
+              res.cookie("token", token);
               res.json("Success");
             }
             if (err) {

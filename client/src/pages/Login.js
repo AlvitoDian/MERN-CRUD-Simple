@@ -9,6 +9,8 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [errorMessages, setErrorMessages] = useState({});
 
+  axios.defaults.withCredentials = true;
+
   // Handle Submit
   const handleSubmit = (e) => {
     e.preventDefault();
